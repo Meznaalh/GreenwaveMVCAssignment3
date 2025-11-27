@@ -9,13 +9,21 @@ This Python application is built using the **MVC (Model-View-Controller)** archi
 ## 📁 Folder Structure
 GreenWave/
 ├── main.py
+
 ├── model/
+
 │ └── models.py
+
 ├── view/
+
 │ └── gui.py
+
 ├── controller/
+
 │ └── controller.py
+
 ├── attendees.pkl # Automatically created
+
 ├── README.md
 
 
