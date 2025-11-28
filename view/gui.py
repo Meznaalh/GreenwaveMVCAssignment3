@@ -50,6 +50,46 @@ class GreenWaveGUI:
         tk.Button(self.frame, text="Upgrade Ticket", command=self.upgrade_ticket_screen).grid(row=4, column=0)
         tk.Button(self.frame, text="Logout", command=self.logout).grid(row=5, column=0)
 
+    def cancel_ticket(self):
+        try:
+            self.controller.cancel_ticket()
+            messagebox.showinfo("Canceled", "Your ticket has been canceled.")
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
+
+
+    def reserve_workshop_screen(self):
+        self.clear_frame()
+        workshops = self.controller.get_all_workshops()
+        ticket_exhibitions = self.controller.logged_in.pass_ref.ticket_type.access_exhibitions
+
+
+        tk.Label(self.frame, text="Reserve Workshop (based on your ticket access):").pack()
+        self.workshop_vars = []
+        for w in workshops:
+            if w.exhibition in ticket_exhibitions and w.capacity > 0:
+                var = tk.IntVar()
+                cb = tk.Checkbutton(self.frame, text=f"{w.title} (Exhibition {w.exhibition}) - Seats left: {w.capacity}", variable=var)
+                cb.pack(anchor='w')
+                self.workshop_vars.append((var, w))
+
+
+        tk.Button(self.frame, text="Reserve", command=self.reserve_selected_workshops).pack(pady=10)
+        tk.Button(self.frame, text="Back", command=self.create_dashboard).pack()
+
+    def reserve_selected_workshops(self):
+        selected = [w for var, w in self.workshop_vars if var.get() == 1]
+        if not selected:
+            messagebox.showwarning("Select", "Please select at least one workshop")
+            return
+        try:
+            self.controller.reserve_workshops(selected)
+            messagebox.showinfo("Reserved", "Workshops successfully reserved!")
+            self.create_dashboard()
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
+
+    
     def modify_account_screen(self):
         self.clear_frame()
         tk.Label(self.frame, text="New Email").grid(row=0, column=0)
@@ -125,7 +165,6 @@ class GreenWaveGUI:
     def ticket_purchase_screen(self):
         self.clear_frame()
         tk.Label(self.frame, text="Choose Ticket Type:").pack()
-
         self.ticket_vars = []
         for ticket in self.controller.ticket_types:
             var = tk.IntVar()
@@ -133,9 +172,18 @@ class GreenWaveGUI:
             cb.pack(anchor='w')
             self.ticket_vars.append((var, ticket))
 
+
+        tk.Label(self.frame, text="Select Payment Method:").pack()
+        self.payment_method = tk.StringVar()
+        tk.Radiobutton(self.frame, text="Credit Card", variable=self.payment_method, value="credit").pack(anchor='w')
+        tk.Radiobutton(self.frame, text="Debit Card", variable=self.payment_method, value="debit").pack(anchor='w')
+        tk.Radiobutton(self.frame, text="Apple Pay", variable=self.payment_method, value="apple").pack(anchor='w')
+
+
         tk.Label(self.frame, text="Card Number").pack()
         self.card_entry = tk.Entry(self.frame)
         self.card_entry.pack()
+
 
         tk.Button(self.frame, text="Purchase", command=self.purchase_ticket).pack(pady=10)
         tk.Button(self.frame, text="Back", command=self.create_dashboard).pack()
@@ -147,17 +195,17 @@ class GreenWaveGUI:
         chosen_ticket = None
         for var, ticket in self.ticket_vars:
             if var.get() == 1:
-                chosen_ticket = ticket
+                 chosen_ticket = ticket
                 break
         if not chosen_ticket:
-            messagebox.showerror("Error", "Please select a ticket")
+             messagebox.showerror("Error", "Please select a ticket")
             return
         if not self.card_entry.get().isdigit():
-            messagebox.showerror("Error", "Invalid card number")
+              messagebox.showerror("Error", "Invalid card number")
             return
-        self.controller.purchase_ticket(chosen_ticket)
-        messagebox.showinfo("Success", "Ticket purchased successfully")
-        self.create_dashboard()
+        self.controller.purchase_ticket(chosen_ticket, self.payment_method.get())
+         messagebox.showinfo("Success", "Ticket purchased successfully")
+         self.create_dashboard()
 
     def upgrade_ticket_screen(self):
         self.clear_frame()
