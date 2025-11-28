@@ -1,8 +1,14 @@
 # main.py
-# This is the main entry point for the GreenWave Conference System
+# Main entry point for the GreenWave Conference Ticketing System
 
-from view.gui import run_gui
+import tkinter as tk
+from view.gui import GreenWaveGUI
+
+def main():
+    """Starts the GreenWave Conference GUI application"""
+    root = tk.Tk()
+    app = GreenWaveGUI(root)
+    root.mainloop()
 
 if __name__ == "__main__":
-    run_gui()
-
+    main()
