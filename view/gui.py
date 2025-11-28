@@ -1,287 +1,272 @@
-# --------------------------------------------------
-# GUI MODULE FOR GREENWAVE CONFERENCE SYSTEM
-# This file represents the VIEW layer in the MVC architecture.
-# It handles all user interaction using Tkinter.
-# --------------------------------------------------
-
-import tkinter as tk                      # Tkinter library for GUI creation
-from tkinter import messagebox            # Message boxes for alerts and confirmations
-from controller.controller import GreenWaveController   # Controller (business logic layer)
-
+import tkinter as tk                          # Import tkinter library to build the GUI
+from tkinter import messagebox              # Import messagebox for popup messages
+from controller.controller import GreenWaveController  # Import controller (MVC logic)
 
 class GreenWaveGUI:
-    """Main GUI class for the GreenWave Conference Ticketing System"""
+    """
+    This class represents the graphical user interface (View layer)
+    of the GreenWave Conference System.
+    It communicates with the Controller to perform actions.
+    """
 
     def __init__(self, root):
-        """
-        Constructor that initializes the main window and controller.
-        This method runs only once when the application starts.
-        """
-        self.controller = GreenWaveController()   # Create controller object (MVC connection)
-        self.root = root                          # Reference to the main Tkinter window
-        self.root.title("GreenWave Conference Ticketing System")   # Window title
-        self.root.geometry("600x500")             # Window size
+        # Create the controller object (connects GUI to Model)
+        self.controller = GreenWaveController()
 
-        # Main container frame that holds all widgets
+        # Store reference to the main application window
+        self.root = root
+        self.root.title("GreenWave Conference System")  # Window title
+        self.root.geometry("500x500")                   # Window size
+
+        # Main frame that holds all GUI widgets
         self.frame = tk.Frame(self.root)
-        self.frame.pack(pady=20)
+        self.frame.pack()
 
-        # Load login screen when program starts
+        # Tkinter variables used to store user input
+        self.username = tk.StringVar()  # Stores entered username
+        self.password = tk.StringVar()  # Stores entered password
+        self.email = tk.StringVar()     # Stores entered email
+        self.payment = tk.StringVar()   # Stores payment method
+
+        # Start the application with the login screen
         self.create_login_screen()
-
-    # --------------------------------------------------
-    # UTILITY FUNCTION
-    # --------------------------------------------------
 
     def clear_frame(self):
         """
-        Removes all widgets from the current frame.
-        This allows screen switching inside the same window.
+        Removes all existing widgets from the frame.
+        Used when switching between different screens.
         """
-        for widget in self.frame.winfo_children():
-            widget.destroy()
+        for w in self.frame.winfo_children():
+            w.destroy()
 
-    # --------------------------------------------------
-    # LOGIN & REGISTRATION SCREENS
-    # --------------------------------------------------
-
+    # ---------------- LOGIN ----------------
     def create_login_screen(self):
-        """Displays the user login screen"""
+        """
+        Creates the login screen where users or admins can log in.
+        """
         self.clear_frame()
 
-        # Username input
-        tk.Label(self.frame, text="Username").grid(row=0, column=0)
-        self.username_entry = tk.Entry(self.frame, width=30)
-        self.username_entry.grid(row=0, column=1)
+        tk.Label(self.frame, text="Username").pack()
+        tk.Entry(self.frame, textvariable=self.username).pack()
 
-        # Password input (hidden)
-        tk.Label(self.frame, text="Password").grid(row=1, column=0)
-        self.password_entry = tk.Entry(self.frame, width=30, show="*")
-        self.password_entry.grid(row=1, column=1)
+        tk.Label(self.frame, text="Password").pack()
+        tk.Entry(self.frame, textvariable=self.password, show="*").pack()
 
-        # Buttons for navigation
-        tk.Button(self.frame, text="Login", command=self.login).grid(row=2, column=0)
-        tk.Button(self.frame, text="Register", command=self.create_register_screen).grid(row=2, column=1)
-        tk.Button(self.frame, text="Admin Login", command=self.admin_login_screen).grid(
-            row=3, column=0, columnspan=2)
+        tk.Button(self.frame, text="Login", command=self.login).pack()
+        tk.Button(self.frame, text="Register", command=self.create_register_screen).pack()
+        tk.Button(self.frame, text="Admin Login", command=self.admin_login_screen).pack()
 
+    # ---------------- REGISTER ----------------
     def create_register_screen(self):
-        """Displays the account registration screen"""
+        """
+        Screen for creating a new attendee account.
+        """
         self.clear_frame()
 
-        tk.Label(self.frame, text="Username").grid(row=0, column=0)
-        self.username_entry = tk.Entry(self.frame, width=30)
-        self.username_entry.grid(row=0, column=1)
+        tk.Label(self.frame, text="Username").pack()
+        tk.Entry(self.frame, textvariable=self.username).pack()
 
-        tk.Label(self.frame, text="Password").grid(row=1, column=0)
-        self.password_entry = tk.Entry(self.frame, width=30, show="*")
-        self.password_entry.grid(row=1, column=1)
+        tk.Label(self.frame, text="Password").pack()
+        tk.Entry(self.frame, textvariable=self.password, show="*").pack()
 
-        tk.Label(self.frame, text="Email").grid(row=2, column=0)
-        self.email_entry = tk.Entry(self.frame, width=30)
-        self.email_entry.grid(row=2, column=1)
+        tk.Label(self.frame, text="Email").pack()
+        tk.Entry(self.frame, textvariable=self.email).pack()
 
-        tk.Button(self.frame, text="Create Account", command=self.register).grid(
-            row=3, column=0, columnspan=2)
-        tk.Button(self.frame, text="Back to Login", command=self.create_login_screen).grid(
-            row=4, column=0, columnspan=2)
+        tk.Button(self.frame, text="Create", command=self.register).pack()
+        tk.Button(self.frame, text="Back", command=self.create_login_screen).pack()
 
-    # --------------------------------------------------
-    # USER DASHBOARD
-    # --------------------------------------------------
-
+    # ---------------- DASHBOARD ----------------
     def create_dashboard(self):
-        """Displays the dashboard for a logged-in user"""
+        """
+        Main dashboard shown after successful attendee login.
+        Provides access to all user functionalities.
+        """
         self.clear_frame()
+        tk.Button(self.frame, text="View Details", command=self.show_details).pack()
+        tk.Button(self.frame, text="Purchase Ticket", command=self.purchase_screen).pack()
+        tk.Button(self.frame, text="Upgrade Ticket", command=self.upgrade_screen).pack()
+        tk.Button(self.frame, text="Reserve Workshop", command=self.reserve_screen).pack()
+        tk.Button(self.frame, text="Delete Account", command=self.delete_account).pack()
+        tk.Button(self.frame, text="Logout", command=self.logout).pack()
 
-        tk.Label(self.frame,
-                 text=f"Welcome, {self.controller.logged_in.account.username}!"
-                 ).grid(row=0, column=0)
-
-        tk.Button(self.frame, text="View Details", command=self.show_details).grid(row=1, column=0)
-        tk.Button(self.frame, text="Modify Account", command=self.modify_account_screen).grid(row=2, column=0)
-        tk.Button(self.frame, text="Ticket Purchase", command=self.ticket_purchase_screen).grid(row=3, column=0)
-        tk.Button(self.frame, text="Upgrade Ticket", command=self.upgrade_ticket_screen).grid(row=4, column=0)
-        tk.Button(self.frame, text="Delete Account", command=self.delete_account).grid(row=5, column=0)
-        tk.Button(self.frame, text="Logout", command=self.logout).grid(row=6, column=0)
-
-    # --------------------------------------------------
-    # ACCOUNT OPERATIONS
-    # --------------------------------------------------
-
-    def show_details(self):
-        """Displays logged-in attendee details"""
-        att = self.controller.logged_in
-        ticket = att.pass_ref.ticket_type.name if att.pass_ref else "No Ticket"
-        message = (
-            f"Username: {att.account.username}\n"
-            f"Email: {att.account.email}\n"
-            f"Ticket: {ticket}"
-        )
-        messagebox.showinfo("Your Details", message)
-
-    def modify_account_screen(self):
-        """Allows the user to update email and password"""
-        self.clear_frame()
-
-        tk.Label(self.frame, text="New Email").grid(row=0, column=0)
-        new_email = tk.Entry(self.frame)
-        new_email.grid(row=0, column=1)
-
-        tk.Label(self.frame, text="New Password").grid(row=1, column=0)
-        new_pass = tk.Entry(self.frame, show="*")
-        new_pass.grid(row=1, column=1)
-
-        def save():
-            """Save modified account details"""
-            if new_email.get():
-                self.controller.logged_in.account.email = new_email.get()
-            if new_pass.get():
-                self.controller.logged_in.account.password = new_pass.get()
-
-            self.controller.save_attendees()   # Persist changes using Pickle
-            messagebox.showinfo("Success", "Account updated successfully")
-            self.create_dashboard()
-
-        tk.Button(self.frame, text="Save", command=save).grid(row=2, column=0, columnspan=2)
-        tk.Button(self.frame, text="Back", command=self.create_dashboard).grid(row=3, column=0, columnspan=2)
-
-    def delete_account(self):
-        """Deletes the currently logged-in user account"""
-        if messagebox.askyesno("Confirm", "Are you sure you want to delete your account?"):
-            self.controller.delete_logged_in_account()
-            messagebox.showinfo("Deleted", "Account deleted successfully")
-            self.create_login_screen()
-
-    def logout(self):
-        """Logs the user out and returns to login screen"""
-        self.controller.logged_in = None
-        self.create_login_screen()
-
-    # --------------------------------------------------
-    # LOGIN & REGISTRATION LOGIC
-    # --------------------------------------------------
-
+    # ---------------- USER FUNCTIONS ----------------
     def login(self):
-        """Validates user login credentials through the controller"""
+        """
+        Logs in the user using the controller.
+        """
         try:
-            self.controller.login(
-                self.username_entry.get(),
-                self.password_entry.get()
-            )
+            self.controller.login(self.username.get(), self.password.get())
             self.create_dashboard()
         except ValueError as e:
-            messagebox.showerror("Login Failed", str(e))
+            messagebox.showerror("Error", str(e))
 
     def register(self):
-        """Registers a new attendee account"""
+        """
+        Creates a new user account using the controller.
+        """
         try:
             self.controller.create_account(
-                self.username_entry.get(),
-                self.password_entry.get(),
-                self.email_entry.get()
+                self.username.get(),
+                self.password.get(),
+                self.email.get()
             )
-            messagebox.showinfo("Success", "Account created successfully!")
+            messagebox.showinfo("Success", "Account created")
             self.create_login_screen()
         except ValueError as e:
             messagebox.showerror("Error", str(e))
 
-    # --------------------------------------------------
-    # TICKET MANAGEMENT
-    # --------------------------------------------------
+    def show_details(self):
+        """
+        Displays the logged-in attendee's account and ticket information.
+        """
+        att = self.controller.logged_in
+        ticket = att.pass_ref.ticket_type.name if att.pass_ref else "None"
+        messagebox.showinfo(
+            "Details",
+            f"Username: {att.account.username}\nEmail: {att.account.email}\nTicket: {ticket}"
+        )
 
-    def ticket_purchase_screen(self):
-        """Displays ticket purchasing interface"""
+    def delete_account(self):
+        """
+        Deletes the currently logged-in attendee account.
+        """
+        self.controller.delete_logged_in_account()
+        self.create_login_screen()
+
+    def logout(self):
+        """
+        Logs out the current user and returns to the login screen.
+        """
+        self.controller.logged_in = None
+        self.create_login_screen()
+
+    # ---------------- PURCHASE ----------------
+    def purchase_screen(self):
+        """
+        Displays all available ticket types and payment input.
+        """
         self.clear_frame()
-        tk.Label(self.frame, text="Choose Ticket Type").pack()
+        self.selected_ticket = tk.IntVar()
 
-        self.ticket_vars = []
-        for ticket in self.controller.ticket_types:
-            var = tk.IntVar()
+        for i, t in enumerate(self.controller.ticket_types):
             tk.Radiobutton(
                 self.frame,
-                text=f"{ticket.name} - AED {ticket.price}",
-                variable=var,
-                value=1
-            ).pack(anchor="w")
-            self.ticket_vars.append((var, ticket))
+                text=f"{t.name} | AED {t.price} | Access: {t.exhibitions}",
+                variable=self.selected_ticket,
+                value=i
+            ).pack()
 
-        # Payment selection
-        self.payment_method = tk.StringVar()
         tk.Label(self.frame, text="Payment Method").pack()
-        tk.Radiobutton(self.frame, text="Credit Card", variable=self.payment_method, value="credit").pack(anchor="w")
-        tk.Radiobutton(self.frame, text="Debit Card", variable=self.payment_method, value="debit").pack(anchor="w")
-        tk.Radiobutton(self.frame, text="Apple Pay", variable=self.payment_method, value="apple").pack(anchor="w")
+        tk.Entry(self.frame, textvariable=self.payment).pack()
 
-        tk.Label(self.frame, text="Card Number").pack()
-        self.card_entry = tk.Entry(self.frame)
-        self.card_entry.pack()
-
-        tk.Button(self.frame, text="Purchase", command=self.purchase_ticket).pack(pady=10)
+        tk.Button(self.frame, text="Confirm Purchase", command=self.purchase_ticket).pack()
         tk.Button(self.frame, text="Back", command=self.create_dashboard).pack()
 
     def purchase_ticket(self):
-        """Processes ticket purchase transaction"""
-        if not self.card_entry.get().isdigit():
-            messagebox.showerror("Error", "Invalid Card Number")
-            return
-
-        chosen = None
-        for var, ticket in self.ticket_vars:
-            if var.get() == 1:
-                chosen = ticket
-                break
-
-        if not chosen:
-            messagebox.showerror("Error", "Please select a ticket")
-            return
-
-        self.controller.purchase_ticket(chosen, self.payment_method.get())
-        messagebox.showinfo("Success", "Ticket purchased successfully")
+        """
+        Confirms ticket purchase and sends the request to controller.
+        """
+        i = self.selected_ticket.get()
+        ticket = self.controller.ticket_types[i]
+        self.controller.purchase_ticket(ticket, self.payment.get())
+        messagebox.showinfo("Success", "Ticket purchased")
         self.create_dashboard()
 
-    def upgrade_ticket_screen(self):
-        """Allows a user to upgrade their ticket"""
+    # ---------------- UPGRADE ----------------
+    def upgrade_screen(self):
+        """
+        Displays available ticket upgrades.
+        """
         self.clear_frame()
+        current_price = self.controller.logged_in.pass_ref.ticket_type.price
+        self.upgrade_var = tk.IntVar()
 
-        current = self.controller.logged_in.pass_ref.ticket_type
-        tk.Label(self.frame, text=f"Current Ticket: {current.name}").pack()
-
-        self.upgrade_options = []
-        for ticket in self.controller.ticket_types:
-            if ticket.price > current.price:
-                var = tk.IntVar()
+        for i, t in enumerate(self.controller.ticket_types):
+            if t.price > current_price:
                 tk.Radiobutton(
                     self.frame,
-                    text=f"{ticket.name} - AED {ticket.price}",
-                    variable=var,
-                    value=1
-                ).pack(anchor="w")
-                self.upgrade_options.append((var, ticket))
+                    text=f"{t.name} | AED {t.price}",
+                    variable=self.upgrade_var,
+                    value=i
+                ).pack()
 
-        tk.Button(self.frame, text="Upgrade", command=self.upgrade_ticket).pack(pady=10)
+        tk.Button(self.frame, text="Upgrade", command=self.upgrade_ticket).pack()
         tk.Button(self.frame, text="Back", command=self.create_dashboard).pack()
 
     def upgrade_ticket(self):
-        """Processes ticket upgrade"""
-        selected = None
-        for var, ticket in self.upgrade_options:
-            if var.get() == 1:
-                selected = ticket
-                break
-
-        if not selected:
-            messagebox.showerror("Error", "Please select an upgrade")
-            return
-
-        self.controller.upgrade_ticket(selected)
-        messagebox.showinfo("Success", "Ticket upgraded successfully")
+        """
+        Upgrades the attendee's current ticket.
+        """
+        ticket = self.controller.ticket_types[self.upgrade_var.get()]
+        self.controller.upgrade_ticket(ticket)
+        messagebox.showinfo("Success", "Ticket upgraded")
         self.create_dashboard()
 
-    # --------------------------------------------------
-    # ADMIN MODULE (TEMP DISABLED FOR STABILITY)
-    # --------------------------------------------------
+    # ---------------- WORKSHOPS ----------------
+    def reserve_screen(self):
+        """
+        Displays all workshops and allows the user to reserve them.
+        """
+        self.clear_frame()
+        self.work_vars = []
 
+        for w in self.controller.get_all_workshops():
+            v = tk.IntVar()
+            tk.Checkbutton(
+                self.frame,
+                text=f"{w.title} | {w.exhibition} | Seats: {w.capacity}",
+                variable=v
+            ).pack()
+            self.work_vars.append((v, w))
+
+        tk.Button(self.frame, text="Reserve", command=self.reserve).pack()
+        tk.Button(self.frame, text="Back", command=self.create_dashboard).pack()
+
+    def reserve(self):
+        """
+        Reserves all selected workshops for the attendee.
+        """
+        selected = [w for v, w in self.work_vars if v.get()]
+        try:
+            self.controller.reserve_workshops(selected)
+            messagebox.showinfo("Reserved", "Workshops reserved")
+            self.create_dashboard()
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
+
+    # ---------------- ADMIN ----------------
     def admin_login_screen(self):
-        """Admin functions temporarily disabled for testing"""
-        messagebox.showinfo("Info", "Admin module will be activated after controller completion.")
+        """
+        Login screen for administrator.
+        """
+        self.clear_frame()
+        tk.Label(self.frame, text="Admin Username").pack()
+        tk.Entry(self.frame, textvariable=self.username).pack()
+
+        tk.Label(self.frame, text="Admin Password").pack()
+        tk.Entry(self.frame, textvariable=self.password, show="*").pack()
+
+        tk.Button(self.frame, text="Login", command=self.admin_login).pack()
+
+    def admin_login(self):
+        """
+        Validates admin credentials and opens admin dashboard.
+        """
+        if self.controller.validate_admin(
+            self.username.get(),
+            self.password.get()
+        ):
+            self.admin_dashboard()
+        else:
+            messagebox.showerror("Error", "Invalid Admin Login")
+
+    def admin_dashboard(self):
+        """
+        Displays daily ticket sales and revenue for administrators.
+        """
+        self.clear_frame()
+        for r in self.controller.get_sales_reports():
+            tk.Label(
+                self.frame,
+                text=f"{r.date} | Tickets: {r.tickets_sold} | Sales: {r.total_sales}"
+            ).pack()
