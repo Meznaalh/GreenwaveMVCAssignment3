@@ -230,4 +230,5 @@ class GreenWaveController:
 
         # Check if today's report exists
         for report in self.sales_reports:
+            pass
            
