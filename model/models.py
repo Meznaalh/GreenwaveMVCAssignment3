@@ -1,146 +1,97 @@
-import pickle
-
-# ---------------------------
-# Composition: Account is part of Attendee (Attendee cannot exist without it)
-# ---------------------------
+# -------------------------------
+# MODEL LAYER
+# Contains all UML classes
+# These classes represent the core data structure of the system
+# -------------------------------
 
 class Account:
+    """
+    Account class stores login credentials and personal details
+    for each attendee in the system.
+    """
+
     def __init__(self, username, password, email):
-        self.username = username  # string: login name
-        self.password = password  # string: password
-        self.email = email        # string: email address
+        self.username = username      # Stores the user's login username
+        self.password = password      # Stores the user's login password
+        self.email = email            # Stores the user's email address
 
-
-# ---------------------------
-# Aggregation: Pass is separate from Attendee (can exist independently)
-# ---------------------------
-
-class Pass:
-    def __init__(self, pass_id, access_level):
-        self.pass_id = pass_id               # string: unique ID
-        self.access_level = access_level     # list of exhibitions this pass allows
-        self.reserved_workshops = []         # list of Workshop objects
-
-    def reserve_workshop(self, workshop):
-        if workshop.capacity > 0:
-            self.reserved_workshops.append(workshop)
-            workshop.capacity -= 1
-        else:
-            raise Exception("Workshop is full.")
-
-
-# ---------------------------
-# Attendee has Account (composition) and optional Pass (aggregation)
-# ---------------------------
-
-class Attendee:
-    def __init__(self, account):
-        self.account = account          # composition: Account object
-        self.attendee_pass = None       # aggregation: Pass object (optional)
-        self.tickets = []               # list of Ticket objects
-        self.reservations = []          # list of Workshop objects
-
-    def assign_pass(self, attendee_pass):
-        self.attendee_pass = attendee_pass
-
-    def reserve_workshop(self, workshop):
-        if self.attendee_pass is None:
-            raise Exception("No pass assigned.")
-        if workshop.exhibition not in self.attendee_pass.access_level:
-            raise Exception("Pass does not allow access to this workshop's exhibition.")
-        self.attendee_pass.reserve_workshop(workshop)
-        self.reservations.append(workshop)
-
-
-# ---------------------------
-# Ticket Types (Single, Double, Full)
-# ---------------------------
 
 class TicketType:
-    def __init__(self, name, price, access_scope):
-        self.name = name                      # string: type name
-        self.price = price                    # float: ticket price
-        self.access_scope = access_scope      # list: allowed exhibitions
+    """
+    TicketType defines the rules of a ticket such as price
+    and which exhibitions it grants access to.
+    """
 
+    def __init__(self, name, price, exhibitions):
+        self.name = name              # Name of the ticket (Single, Double, Full)
+        self.price = price            # Ticket price in AED
+        self.exhibitions = exhibitions  # List of exhibitions allowed (e.g., ["A", "B"])
 
-# ---------------------------
-# Tickets (purchased by attendee)
-# ---------------------------
-
-class Ticket:
-    def __init__(self, ticket_type, purchase_date):
-        self.ticket_type = ticket_type        # TicketType object
-        self.purchase_date = purchase_date    # string: when ticket was bought
-
-
-# ---------------------------
-# Workshops (events to reserve)
-# ---------------------------
-
-class Workshop:
-    def __init__(self, title, exhibition, capacity):
-        self.title = title              # string: workshop name
-        self.exhibition = exhibition    # string: which exhibition it belongs to (e.g., 'A', 'B', 'C')
-        self.capacity = capacity        # int: number of available seats
-
-
-# ---------------------------
-# Admin (inherits from User base class)
-# ---------------------------
-
-class User:
-    def __init__(self, user_id, username, email, password):
-        self.user_id = user_id
-        self.username = username
-        self.email = email
-        self.password = password
-
-
-class Administrator(User):
-    def __init__(self, user_id, username, email, password):
-        super().__init__(user_id, username, email, password)
-        self.sales_reports = []  # list of SalesReport objects
-
-    def add_sales_report(self, report):
-        self.sales_reports.append(report)
-
-
-# ---------------------------
-# SalesReport (monitors performance)
-# ---------------------------
-
-class SalesReport:
-    def __init__(self, date, total_sales, tickets_sold):
-        self.date = date                  # string: 'YYYY-MM-DD'
-        self.total_sales = total_sales    # float: total AED
-        self.tickets_sold = tickets_sold  # int: number of tickets
-
-
-# ---------------------------
-# Payment class (basic representation)
-# ---------------------------
 
 class Payment:
+    """
+    Payment class stores details of how a ticket was paid for.
+    """
+
     def __init__(self, method, amount):
-        self.method = method              # e.g., 'Credit Card', 'Cash'
-        self.amount = amount              # float
+        self.method = method          # Payment method (credit, debit, etc.)
+        self.amount = amount          # Amount paid in AED
 
 
-# ---------------------------
-# Utility functions for Pickle (Persistence)
-# ---------------------------
+class Ticket:
+    """
+    Ticket class represents a purchased ticket created after payment.
+    It links a TicketType with its Payment.
+    """
 
-def save_data(filename, data):
-    """Save any Python object to binary file"""
-    with open(f"data/{filename}", "wb") as file:
-        pickle.dump(data, file)
+    def __init__(self, ticket_type, payment):
+        self.ticket_type = ticket_type   # The type of ticket purchased
+        self.payment = payment           # The payment record for this ticket
 
 
-def load_data(filename):
-    """Load Python object from binary file"""
-    try:
-        with open(f"data/{filename}", "rb") as file:
-            return pickle.load(file)
-    except FileNotFoundError:
-        return []  # if file doesn’t exist, return empty list
+class Pass:
+    """
+    Pass class is issued to an attendee after buying a ticket.
+    It grants access to workshops based on the ticket type.
+    """
 
+    def __init__(self, ticket):
+        self.ticket_type = ticket.ticket_type  # TicketType linked to this pass
+        self.ticket = ticket                   # Reference to the original ticket
+
+
+class Workshop:
+    """
+    Workshop class represents a single workshop event
+    belonging to an exhibition.
+    """
+
+    def __init__(self, title, exhibition, capacity):
+        self.title = title              # Name of the workshop
+        self.exhibition = exhibition   # Exhibition it belongs to (A, B, or C)
+        self.capacity = capacity       # Number of available seats
+
+
+class Attendee:
+    """
+    Attendee class represents a registered conference user.
+    Each attendee has one Account, may have one Pass,
+    and can make workshop reservations.
+    """
+
+    def __init__(self, account):
+        self.account = account         # Composition: Attendee owns an Account
+        self.pass_ref = None           # Reference to the purchased Pass (if any)
+        self.reservations = []         # List of reserved Workshop objects
+
+
+class SalesReport:
+    """
+    SalesReport stores daily ticket sales statistics
+    for the administrator.
+    """
+
+    def __init__(self, date, tickets_sold, total_sales):
+        self.date = date               # Date of the sales report
+        self.tickets_sold = tickets_sold  # Number of tickets sold on that date
+        self.total_sales = total_sales    # Total revenue collected on that date
